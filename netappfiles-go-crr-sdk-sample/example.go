@@ -284,7 +284,7 @@ func exit(cntx context.Context) {
 				exitCode = 1
 				return
 			}
-			sdkutils.WaitForNoANFResource(cntx, anfResources[side].VolumeID, 60, 60, true)
+			sdkutils.WaitForNoANFResource(cntx, anfResources[side].VolumeID, 60, 50, true)
 			utils.ConsoleOutput("\tData replication successfully deleted")
 
 			// Volume deletion
@@ -301,7 +301,7 @@ func exit(cntx context.Context) {
 				exitCode = 1
 				return
 			}
-			sdkutils.WaitForNoANFResource(cntx, anfResources[side].VolumeID, 60, 60, false)
+			sdkutils.WaitForNoANFResource(cntx, anfResources[side].VolumeID, 60, 50, false)
 			utils.ConsoleOutput("\tVolume successfully deleted")
 
 			// Pool Cleanup
@@ -317,7 +317,7 @@ func exit(cntx context.Context) {
 				exitCode = 1
 				return
 			}
-			sdkutils.WaitForNoANFResource(cntx, anfResources[side].CapacityPoolID, 60, 60, false)
+			sdkutils.WaitForNoANFResource(cntx, anfResources[side].CapacityPoolID, 60, 50, false)
 			utils.ConsoleOutput("\tCapacity pool successfully deleted")
 
 			// Account Cleanup
