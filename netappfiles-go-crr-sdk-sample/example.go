@@ -102,7 +102,7 @@ func main() {
 	utils.PrintHeader("Azure NetAppFiles Go CRR SDK Sample - Sample application that enables cross-region replication on an NFSv3 volume.")
 
 	// Getting subscription ID from authentication file
-	config, err := utils.ReadAzureBasicInfoJSON(os.Getenv("AZURE_AUTH_Location"))
+	config, err := utils.ReadAzureBasicInfoJSON(os.Getenv("AZURE_AUTH_LOCATION"))
 	if err != nil {
 		utils.ConsoleOutput(fmt.Sprintf("an error ocurred getting non-sensitive info from AzureAuthFile: %v", err))
 		exitCode = 1
