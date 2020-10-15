@@ -15,56 +15,64 @@ This sample demonstrates how to enable Cross-Region Replication (CRR) on NFSv3 V
 
 In this sample application we perform the following operations:
 
-- Creation
-  - Primary ANF Account
-	| Primary Capacity pool 
-		| Primary NFS v3 Volume 
-		
-  - Secondary ANF Account
-	| Secondary Capacity pool
-		| Secondary NFS v3 Data Replication Volume with reference to the primary volume Resource ID
-			
- - Authorize source volume with destination volume Resource ID
- - Clean up created resources (not enabled by default)
+* Creation
+  * Primary ANF Account
+    * Primary Capacity pool
+      * Primary NFS v3 Volume
+  * Secondary ANF Account
+    * Secondary Capacity pool
+      * Secondary NFS v3 Data Replication Volume with reference to the primary volume Resource ID
+* Authorize primary volume with secondary volume Resource ID
+* Clean up created resources (not enabled by default)
 
 If you don't already have a Microsoft Azure subscription, you can get a FREE trial account [here](http://go.microsoft.com/fwlink/?LinkId=330212).
 
 ## Prerequisites
 
 1. Go installed \(if not installed yet, follow the [official instructions](https://golang.org/dl/)\)
-3. Azure Subscription
-4. Subscription needs to be whitelisted for Azure NetApp Files. For more information, please refer to [this](https://docs.microsoft.com/azure/azure-netapp-files/azure-netapp-files-register#waitlist) document.
-5. Resource Group(s) created
-6. Virtual Networks (both for primary and secondary volumes) with a delegated subnet to Microsoft.Netapp/volumes resource. For more information, please refer to [Guidelines for Azure NetApp Files network planning](https://docs.microsoft.com/en-us/azure/azure-netapp-files/azure-netapp-files-network-topologies)
-7. Adjust variable contents within `var()` block at `example.go` file to match your environment
-8. For this sample Go console application work, we need to authenticate and the chosen method for this sample is using service principals.
-   1. Within an [Azure Cloud Shell](https://docs.microsoft.com/en-us/azure/cloud-shell/quickstart) session, make sure you're logged on at the subscription where you want to be associated with the service principal by default:
-            ```bash
-            az account show
-           ```
-             If this is not the correct subscription, use             
-             ```bash
-            az account set -s <subscription name or id>  
-            ```
-        1. Create a service principal using Azure CLI
-            ```bash
-            az ad sp create-for-rbac --sdk-auth
-            ```
+1. Azure Subscription
+1. Subscription needs to be enabled for Azure NetApp Files. For more information, please refer to [this](https://docs.microsoft.com/azure/azure-netapp-files/azure-netapp-files-register#waitlist) document.
+1. (Valid only until CRR is in preview state) Request preview access for Azure NetApp Files cross-region replication. For more information, please refer to [this](https://docs.microsoft.com/en-us/azure/azure-netapp-files/cross-region-replication-create-peering) document.
+1. Resource Group(s) created
+1. Virtual Networks (both for primary and secondary volumes) with a delegated subnet to Microsoft.Netapp/volumes resource. For more information, please refer to [Guidelines for Azure NetApp Files network planning](https://docs.microsoft.com/en-us/azure/azure-netapp-files/azure-netapp-files-network-topologies)
+1. Adjust variable contents within `var()` block at `example.go` file to match your environment
+1. For this sample Go console application work, we need to authenticate and the chosen method for this sample is using service principals:
+    * Within an [Azure Cloud Shell](https://docs.microsoft.com/en-us/azure/cloud-shell/quickstart) session, make sure you're logged on at the subscription where you want to be associated with the service principal by default
 
-            >Note: this command will automatically assign RBAC contributor role to the service principal at subscription level, you can narrow down the scope to the specific resource group where your tests will create the resources.
+      ```bash
+      az account show
+      ```
 
-        2. Copy the output content and paste it in a file called azureauth.json and secure it with file system permissions (make sure it is not inside of any repo)
-        3. Set an environment variable pointing to the file path you just created, here is an example with Powershell and bash:
-            Powershell 
-            ```powershell
-           [Environment]::SetEnvironmentVariable("AZURE_AUTH_LOCATION", "C:\sdksample\azureauth.json", "User")
-            ```
-            Bash
-            ```bash
-           export AZURE_AUTH_LOCATION=/sdksamples/azureauth.json
-           ``` 
+      If this is not the correct subscription, use
 
-        >Note: for other Azure Active Directory authentication methods for Go, please refer to [Authentication methods in the Azure SDK for Go](https://docs.microsoft.com/en-us/azure/go/azure-sdk-go-authorization). 
+      ```bash
+      az account set -s <subscription name or id>  
+      ```
+
+    * Create a service principal using Azure CLI
+
+      ```bash
+      az ad sp create-for-rbac --sdk-auth
+      ```
+
+      >Note: this command will automatically assign RBAC contributor role to the service principal at subscription level, you can narrow down the scope to the specific resource group where your tests will create the resources.
+
+    * Copy the output content and paste it in a file called azureauth.json and secure it with file system permissions (make sure it is not inside of any repo)
+    * Set an environment variable pointing to the file path you just created, here is an example with Powershell and bash:
+
+      Powershell
+
+      ```powershell
+      [Environment]::SetEnvironmentVariable("AZURE_AUTH_LOCATION", "C:\sdksample\azureauth.json", "User")
+      ```
+
+      Bash
+
+      ```bash
+      export AZURE_AUTH_LOCATION=/sdksamples/azureauth.json
+      ```
+
+    >Note: for other Azure Active Directory authentication methods for Go, please refer to [Authentication methods in the Azure SDK for Go](https://docs.microsoft.com/en-us/azure/go/azure-sdk-go-authorization).
 
 ## What is example.go doing
 
