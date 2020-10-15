@@ -5,13 +5,13 @@ languages:
 products:
 - azure
 - azure-netapp-files
-description: "This sample demonstrates how to enable Cross-Region Replication (CRR) on NFSv3 Volume using Azure Go SDK for Microsoft.NetApp resource provider."
+description: "This sample project demonstrates how to enable Cross-Region Replication (CRR) on NFSv3 Volume using Azure Go SDK with Microsoft.NetApp resource provider."
 ---
 
 
 # Azure NetAppFiles CRR SDK Sample for Go
 
-This sample demonstrates how to enable Cross-Region Replication (CRR) on NFSv3 Volume using Azure Go SDK for Microsoft.NetApp resource provider. This process is identical for NFS v4.1 Volumes with exception of protocol type.
+This sample demonstrates how to enable Cross-Region Replication (CRR) on NFSv3 Volume using Azure Go SDK for Microsoft.NetApp resource provider. This process is identical for NFS v4.1 Volumes with exception of protocol type used.
 
 In this sample application we perform the following operations:
 
@@ -68,15 +68,16 @@ If you don't already have a Microsoft Azure subscription, you can get a FREE tri
 
 ## What is example.go doing
 
-This sample project is dedicated to demonstrate how to enable cross-region replication in Azure NetApp Files for an NFSv3 enabled volume (note that this process is the same for NFSv4.1 volumes), similar to other examples, the authentication method is based on a service principal, this project will create two ANF Accounts in different regions with capacity pool. A single volume using Premium service level tier as the Primary ANF, and Standard service level tier in the secondary region with Data Protection object.
+This sample project is focused on demonstrating how to enable cross-region replication in Azure NetApp Files for an NFSv3 enabled volume (note that this process is the same for NFSv4.1 volumes), similar to other examples, the authentication method is based on a service principal, this project will create two ANF Accounts in different regions with capacity pool. A single volume using Premium service level tier as the Primary ANF, and Standard service level tier in the secondary region with Data Protection object.
 
-I summary, the process of enabling Cross-Region replication, we can describe it as creating the primary resources, including primary volume, then we move forward and create the secondary resources but with the difference that in the secondary volume, it needs to contain the Data Replication Object, after this is complete, a last step happens in the primary volume, which is to authorize the replication.
+I summary, the process of enabling Cross-Region replication, we can describe it as creating the primary resources, including primary volume, then we move forward and create the secondary resources but with the difference that in the secondary volume, it needs to contain the Data Replication Object, after this is complete, as a last step, we authorize the replication from the primary volume referencing the resource id of the secondary volume.
 
-We also use some non-sensitive information from the *file-based authentication* file that in the initial stages, we identify the subscription ID for the test we perform to check if the subnet provided exists before starting creating any ANF resources, failing execution if they're missing.
+In addition, we use some non-sensitive information from the *file-based authentication* file that in the initial stages we get the subscription ID and this is used for the test we perform to check if the subnets provided exists before starting creating any ANF resources, failing execution if they're missing.
 
 Authentication is made on each operation where we obtain an authorizer to pass to each client we instantiate (in Azure Go SDK for NetAppFiles each resource has its own client). For more information about the authentication process used, refer to [Use file-based authentication](https://docs.microsoft.com/en-us/azure/go/azure-sdk-go-authorization#use-file-based-authentication) section of [Authentication methods in the Azure SDK for Go](https://docs.microsoft.com/en-us/azure/go/azure-sdk-go-authorization) document.
 
-Lastly, the clean up process takes place (not enabled by default, please change variable `shouldCleanUp` to `true` at `example.go` file if you want clean up to take place), deleting all resources in the reverse order following the hierarchy otherwise we can't remove resources that have nested resources. Related to CRR, before removing the secondary volume, we need to remove data replication object before deleting the volume. You will also notice that the clean up process uses a function called `WaitForNoANFResource`, at this moment this is required so we can workaround a current ARM behavior of reporting that the object was deleted when in fact its deletion is still in progress. We will also notice some functions called `GetAnf<resource type>`, these were also created in this sample to be able to get the name of the resource without its hierarchy represented in the `<resource type>.name` property, which cannot be used directly in other methods of Azure NetApp Files client like `get`.
+Lastly, the clean up process takes place (not enabled by default, please change variable `shouldCleanUp` to `true` at `example.go` file `vaa()` section if you want clean up), deleting all resources in the reverse order following the hierarchy otherwise we can't remove resources that have nested resources. Related to CRR, before removing the secondary volume, we need to remove data replication object on it before deleting the volume. If there is an error during the application execution, clean up does not take place and you will need to manually perform this task.
+You will notice that the clean up process uses a function called `WaitForNoANFResource` while other parts of the code uses `WaitForANFResource`, at this moment this is required so we can workaround a current ARM behavior of reporting that the object was deleted when in fact its deletion is still in progress, similarly, stating the the volume is fully created while this is still finishing up. Also, we will see some functions called `GetAnf<resource type>`, these were created in this sample to be able to get the name of the resource without its hierarchy represented in the `<resource type>.name` property, which cannot be used directly in other methods of Azure NetApp Files client like `get`.
 
 >Note: Please refer to [Resource limits for Azure NetApp Files](https://docs.microsoft.com/en-us/azure/azure-netapp-files/azure-netapp-files-resource-limits) to understand ANF's most current limits.
 
