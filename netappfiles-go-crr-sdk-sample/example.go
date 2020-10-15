@@ -3,15 +3,14 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-// This sample code creates an Azure Netapp Files Account, a Capacity Pool,
-// and two volumes, one NFSv3 and one NFSv4.1, then it takes a snapshot
-// of the first volume (NFSv3) and performs clean up if the variable
-// shouldCleanUp is changed to true.
-//
-// This package uses go-haikunator package (https://github.com/yelinaung/go-haikunator)
-// port from Python's haikunator module and therefore used here just for sample simplification,
-// this doesn't mean that it is endorsed/thouroughly tested by any means, use at own risk.
-// Feel free to provide your own names on variables using it.
+// This sample code shows how to enable cross-region replication
+// on an NFSv3 volume by creating primary and secondary resources
+// (Account, Capacity Pool, Volumes), then enabling it from primary
+// volume. Clean up process (not enabled by default) is made in
+// reverse order, but it starts by deleting the data replication object
+// from secondary volume. Clean up process is not taking place if
+// there is an execution failure, you will need to clean it up manually
+// in this case.
 
 package main
 
