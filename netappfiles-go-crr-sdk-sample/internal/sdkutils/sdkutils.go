@@ -235,6 +235,14 @@ func CreateAnfCapacityPool(ctx context.Context, location, resourceGroupName, acc
 // CreateAnfVolume creates an ANF volume within a Capacity Pool
 func CreateAnfVolume(ctx context.Context, location, resourceGroupName, accountName, poolName, volumeName, serviceLevel, subnetID, snapshotID string, protocolTypes []string, volumeUsageQuota int64, unixReadOnly, unixReadWrite bool, tags map[string]*string, dataProtectionObject netapp.VolumePropertiesDataProtection) (netapp.Volume, error) {
 
+	if len(protocolTypes) > 2 {
+		return netapp.Volume{}, fmt.Errorf("maximum of two protocol types are supported")
+	}
+
+	if len(protocolTypes) > 1 && utils.Contains(protocolTypes, "NFSv4.1") {
+		return netapp.Volume{}, fmt.Errorf("only cifs/nfsv3 protocol types are supported as dual protocol")
+	}
+
 	_, found := utils.FindInSlice(validProtocols, protocolTypes[0])
 	if !found {
 		return netapp.Volume{}, fmt.Errorf("invalid protocol type, valid protocol types are: %v", validProtocols)
