@@ -102,8 +102,8 @@ func GetResourceGroup(resourceURI string) string {
 	return resourceGroupName
 }
 
-// GetAnfAccount gets an account name from resource id/uri
-func GetAnfAccount(resourceURI string) string {
+// GetANFAccount gets an account name from resource id/uri
+func GetANFAccount(resourceURI string) string {
 
 	if len(strings.TrimSpace(resourceURI)) == 0 {
 		return ""
@@ -117,8 +117,8 @@ func GetAnfAccount(resourceURI string) string {
 	return accountName
 }
 
-// GetAnfCapacityPool gets pool name from resource id/uri
-func GetAnfCapacityPool(resourceURI string) string {
+// GetANFCapacityPool gets pool name from resource id/uri
+func GetANFCapacityPool(resourceURI string) string {
 
 	if len(strings.TrimSpace(resourceURI)) == 0 {
 		return ""
@@ -132,8 +132,8 @@ func GetAnfCapacityPool(resourceURI string) string {
 	return accountName
 }
 
-// GetAnfVolume gets volume name from resource id/uri
-func GetAnfVolume(resourceURI string) string {
+// GetANFVolume gets volume name from resource id/uri
+func GetANFVolume(resourceURI string) string {
 
 	if len(strings.TrimSpace(resourceURI)) == 0 {
 		return ""
@@ -147,8 +147,8 @@ func GetAnfVolume(resourceURI string) string {
 	return volumeName
 }
 
-// GetAnfSnapshot gets snapshot name from resource id/uri
-func GetAnfSnapshot(resourceURI string) string {
+// GetANFSnapshot gets snapshot name from resource id/uri
+func GetANFSnapshot(resourceURI string) string {
 
 	if len(strings.TrimSpace(resourceURI)) == 0 {
 		return ""
@@ -162,8 +162,23 @@ func GetAnfSnapshot(resourceURI string) string {
 	return snapshotName
 }
 
-// IsAnfResource checks if resource is an ANF related resource
-func IsAnfResource(resourceURI string) bool {
+// GetANFSnapshotPolicy gets snapshot policy name from resource id/uri
+func GetANFSnapshotPolicy(resourceURI string) string {
+
+	if len(strings.TrimSpace(resourceURI)) == 0 {
+		return ""
+	}
+
+	snapshotPolicyName := GetResourceValue(resourceURI, "/snapshotPolicies")
+	if snapshotPolicyName == "" {
+		return ""
+	}
+
+	return snapshotPolicyName
+}
+
+// IsANFResource checks if resource is an ANF related resource
+func IsANFResource(resourceURI string) bool {
 
 	if len(strings.TrimSpace(resourceURI)) == 0 {
 		return false
@@ -172,49 +187,64 @@ func IsAnfResource(resourceURI string) bool {
 	return strings.Index(resourceURI, netAppResourceProviderName) > -1
 }
 
-// IsAnfSnapshot checks resource is a snapshot
-func IsAnfSnapshot(resourceURI string) bool {
+// IsANFSnapshot checks resource is a snapshot
+func IsANFSnapshot(resourceURI string) bool {
 
-	if len(strings.TrimSpace(resourceURI)) == 0 || !IsAnfResource(resourceURI) {
+	if len(strings.TrimSpace(resourceURI)) == 0 || !IsANFResource(resourceURI) {
 		return false
 	}
 
 	return strings.LastIndex(resourceURI, "/snapshots/") > -1
 }
 
-// IsAnfVolume checks resource is a volume
-func IsAnfVolume(resourceURI string) bool {
+// IsANFVolume checks resource is a volume
+func IsANFVolume(resourceURI string) bool {
 
-	if len(strings.TrimSpace(resourceURI)) == 0 || !IsAnfResource(resourceURI) {
+	if len(strings.TrimSpace(resourceURI)) == 0 || !IsANFResource(resourceURI) {
 		return false
 	}
 
-	return !IsAnfSnapshot(resourceURI) &&
+	return !IsANFSnapshot(resourceURI) &&
 		strings.LastIndex(resourceURI, "/volumes/") > -1
 }
 
-// IsAnfCapacityPool checks resource is a capacity pool
-func IsAnfCapacityPool(resourceURI string) bool {
+// IsANFCapacityPool checks resource is a capacity pool
+func IsANFCapacityPool(resourceURI string) bool {
 
-	if len(strings.TrimSpace(resourceURI)) == 0 || !IsAnfResource(resourceURI) {
+	if len(strings.TrimSpace(resourceURI)) == 0 || !IsANFResource(resourceURI) {
 		return false
 	}
 
-	return !IsAnfSnapshot(resourceURI) &&
-		!IsAnfVolume(resourceURI) &&
+	return !IsANFSnapshot(resourceURI) &&
+		!IsANFVolume(resourceURI) &&
 		strings.LastIndex(resourceURI, "/capacityPools/") > -1
 }
 
-// IsAnfAccount checks resource is an account
-func IsAnfAccount(resourceURI string) bool {
+// IsANFSnapshotPolicy checks resource is a snapshot policy
+func IsANFSnapshotPolicy(resourceURI string) bool {
 
-	if len(strings.TrimSpace(resourceURI)) == 0 || !IsAnfResource(resourceURI) {
+	if len(strings.TrimSpace(resourceURI)) == 0 || !IsANFResource(resourceURI) {
 		return false
 	}
 
-	return !IsAnfSnapshot(resourceURI) &&
-		!IsAnfVolume(resourceURI) &&
-		!IsAnfCapacityPool(resourceURI) &&
+	return !IsANFSnapshot(resourceURI) &&
+		!IsANFVolume(resourceURI) &&
+		!IsANFCapacityPool(resourceURI) &&
+		strings.LastIndex(resourceURI, "/snapshotPolicies/") > -1
+}
+
+// IsANFAccount checks resource is an account
+func IsANFAccount(resourceURI string) bool {
+
+	if len(strings.TrimSpace(resourceURI)) == 0 || !IsANFResource(resourceURI) {
+		return false
+	}
+
+	return !IsANFSnapshot(resourceURI) &&
+		!IsANFVolume(resourceURI) &&
+		!IsANFCapacityPool(resourceURI) &&
+		!IsANFSnapshotPolicy(resourceURI) &&
+		strings.LastIndex(resourceURI, "/snapshotPolicies/") == -1 &&
 		strings.LastIndex(resourceURI, "/backupPolicies/") == -1 &&
 		strings.LastIndex(resourceURI, "/netAppAccounts/") > -1
 }

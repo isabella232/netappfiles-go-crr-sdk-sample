@@ -38,7 +38,7 @@ type (
 		VnetResourceGroupName string
 		VnetName              string
 		SubnetName            string
-		AnfAccountName        string
+		ANFAccountName        string
 		CapacityPoolName      string
 		VolumeName            string
 		ServiceLevel          string // Valid service levels are Standard, Premium and Ultra
@@ -69,7 +69,7 @@ var (
 			VnetResourceGroupName: "anf-primary-rg",
 			VnetName:              "westus-primary-vnet",
 			SubnetName:            "anf-primary-sn",
-			AnfAccountName:        "PrimaryANFAccount",
+			ANFAccountName:        "PrimaryANFAccount",
 			CapacityPoolName:      "PrimaryPool",
 			ServiceLevel:          "Premium",
 			VolumeName:            "PrimaryVolume",
@@ -80,7 +80,7 @@ var (
 			VnetResourceGroupName: "anf-secondary-rg",
 			VnetName:              "eastus-secondary-vnet",
 			SubnetName:            "anf-secondary-sn",
-			AnfAccountName:        "SecondaryANFAccount",
+			ANFAccountName:        "SecondaryANFAccount",
 			CapacityPoolName:      "SecondaryPool",
 			ServiceLevel:          "Standard",
 			VolumeName:            "SecondaryVolume",
@@ -139,7 +139,7 @@ func main() {
 		// Account creation
 		utils.ConsoleOutput(fmt.Sprintf("Creating %v Azure NetApp Files account...", side))
 
-		account, err := sdkutils.CreateAnfAccount(cntx, anfResources[side].Location, anfResources[side].ResourceGroupName, anfResources[side].AnfAccountName, nil, sampleTags)
+		account, err := sdkutils.CreateANFAccount(cntx, anfResources[side].Location, anfResources[side].ResourceGroupName, anfResources[side].ANFAccountName, nil, sampleTags)
 		if err != nil {
 			utils.ConsoleOutput(fmt.Sprintf("an error ocurred while creating account: %v", err))
 			exitCode = 1
@@ -151,11 +151,11 @@ func main() {
 
 		// Capacity pool creation
 		utils.ConsoleOutput(fmt.Sprintf("Creating %v Capacity Pool...", side))
-		capacityPool, err := sdkutils.CreateAnfCapacityPool(
+		capacityPool, err := sdkutils.CreateANFCapacityPool(
 			cntx,
 			anfResources[side].Location,
 			anfResources[side].ResourceGroupName,
-			anfResources[side].AnfAccountName,
+			anfResources[side].ANFAccountName,
 			anfResources[side].CapacityPoolName,
 			anfResources[side].ServiceLevel,
 			capacityPoolSizeBytes,
@@ -190,11 +190,11 @@ func main() {
 			}
 		}
 
-		volume, err := sdkutils.CreateAnfVolume(
+		volume, err := sdkutils.CreateANFVolume(
 			cntx,
 			anfResources[side].Location,
 			anfResources[side].ResourceGroupName,
-			anfResources[side].AnfAccountName,
+			anfResources[side].ANFAccountName,
 			anfResources[side].CapacityPoolName,
 			anfResources[side].VolumeName,
 			anfResources[side].ServiceLevel,
@@ -233,7 +233,7 @@ func main() {
 	err = sdkutils.AuthorizeReplication(
 		cntx,
 		anfResources["Primary"].ResourceGroupName,
-		anfResources["Primary"].AnfAccountName,
+		anfResources["Primary"].ANFAccountName,
 		anfResources["Primary"].CapacityPoolName,
 		anfResources["Primary"].VolumeName,
 		anfResources["Secondary"].VolumeID,
@@ -266,13 +266,13 @@ func exit(cntx context.Context) {
 
 		for _, side := range sideIndex {
 			resourceGroupName := anfResources[side].ResourceGroupName
-			accountName := anfResources[side].AnfAccountName
+			accountName := anfResources[side].ANFAccountName
 			poolName := anfResources[side].CapacityPoolName
 			volumeName := anfResources[side].VolumeName
 
 			// Delete replication
 			utils.ConsoleOutput(fmt.Sprintf("\tRemoving data protection object from %v volume...", anfResources[side].VolumeName))
-			err := sdkutils.DeleteAnfVolumeReplication(
+			err := sdkutils.DeleteANFVolumeReplication(
 				cntx,
 				resourceGroupName,
 				accountName,
@@ -289,7 +289,7 @@ func exit(cntx context.Context) {
 
 			// Volume deletion
 			utils.ConsoleOutput(fmt.Sprintf("\tRemoving %v volume...", anfResources[side].VolumeID))
-			err = sdkutils.DeleteAnfVolume(
+			err = sdkutils.DeleteANFVolume(
 				cntx,
 				resourceGroupName,
 				accountName,
@@ -306,7 +306,7 @@ func exit(cntx context.Context) {
 
 			// Pool Cleanup
 			utils.ConsoleOutput(fmt.Sprintf("\tCleaning up capacity pool %v...", anfResources[side].CapacityPoolID))
-			err = sdkutils.DeleteAnfCapacityPool(
+			err = sdkutils.DeleteANFCapacityPool(
 				cntx,
 				resourceGroupName,
 				accountName,
@@ -322,7 +322,7 @@ func exit(cntx context.Context) {
 
 			// Account Cleanup
 			utils.ConsoleOutput(fmt.Sprintf("\tCleaning up account %v...", anfResources[side].AcccountID))
-			err = sdkutils.DeleteAnfAccount(
+			err = sdkutils.DeleteANFAccount(
 				cntx,
 				resourceGroupName,
 				accountName,
