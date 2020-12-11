@@ -5,23 +5,23 @@ languages:
 products:
 - azure
 - azure-netapp-files
-description: "This sample project demonstrates how to enable Cross-Region Replication (CRR) on NFSv3 Volume using Azure Go SDK with Microsoft.NetApp resource provider."
+description: "This sample project demonstrates how to enable cross-region replication (CRR) on NFSv3 volume using Azure Go SDK with Microsoft.NetApp resource provider."
 ---
 
 
-# Azure NetAppFiles CRR SDK Sample for Go
+# Azure NetApp Files CRR SDK Sample for Go
 
-This sample demonstrates how to enable Cross-Region Replication (CRR) on NFSv3 Volume using Azure Go SDK for Microsoft.NetApp resource provider. This process is identical for NFS v4.1 Volumes with exception of protocol type used.
+This sample demonstrates how to enable cross-region replication (CRR) on NFSv3 volume using Azure Go SDK for Microsoft.NetApp resource provider. This process is identical for NFS v4.1 volumes with exception of protocol type used.
 
 In this sample application we perform the following operations:
 
 * Creation
-  * Primary ANF Account
-    * Primary Capacity pool
-      * Primary NFS v3 Volume
-  * Secondary ANF Account
-    * Secondary Capacity pool
-      * Secondary NFS v3 Data Replication Volume with reference to the primary volume Resource ID
+  * Primary NetApp account
+    * Primary capacity pool
+      * Primary NFS v3 volume
+  * Secondary NetApp account
+    * Secondary capacity pool
+      * Secondary NFS v3 Data Replication volume with reference to the primary volume Resource ID
 * Authorize primary volume with secondary volume Resource ID
 * Clean up created resources (not enabled by default)
 
@@ -31,34 +31,34 @@ If you don't already have a Microsoft Azure subscription, you can get a FREE tri
 
 1. Go installed \(if not installed yet, follow the [official instructions](https://golang.org/dl/)\)
 1. Azure Subscription
-1. Subscription needs to be enabled for Azure NetApp Files. For more information, please refer to [this](https://docs.microsoft.com/azure/azure-netapp-files/azure-netapp-files-register#waitlist) document.
-1. (Valid only until CRR is in preview state) Request preview access for Azure NetApp Files cross-region replication. For more information, please refer to [this](https://docs.microsoft.com/en-us/azure/azure-netapp-files/cross-region-replication-create-peering) document.
+1. Subscription needs to be enabled for Azure NetApp Files. For more information, see [Submit a waitlist request for accessing the service](https://docs.microsoft.com/azure/azure-netapp-files/azure-netapp-files-register#waitlist).
+1. (Valid only until CRR is in preview state) Request preview access for Azure NetApp Files cross-region replication. For more information, see [Create volume replication for Azure NetApp Files](https://docs.microsoft.com/en-us/azure/azure-netapp-files/cross-region-replication-create-peering).
 1. Resource Group(s) created
-1. Virtual Networks (both for primary and secondary volumes) with a delegated subnet to Microsoft.Netapp/volumes resource. For more information, please refer to [Guidelines for Azure NetApp Files network planning](https://docs.microsoft.com/en-us/azure/azure-netapp-files/azure-netapp-files-network-topologies)
+1. Virtual Networks (both for primary and secondary volumes) with a delegated subnet to Microsoft.Netapp/volumes resource. For more information, see [Guidelines for Azure NetApp Files network planning](https://docs.microsoft.com/en-us/azure/azure-netapp-files/azure-netapp-files-network-topologies).
 1. Adjust variable contents within `var()` block at `example.go` file to match your environment
-1. For this sample Go console application work, we need to authenticate and the chosen method for this sample is using service principals:
-    * Within an [Azure Cloud Shell](https://docs.microsoft.com/en-us/azure/cloud-shell/quickstart) session, make sure you're logged on at the subscription where you want to be associated with the service principal by default
+1. For this sample Go console application to work, authentication is needed. The chosen method for this sample is using service principals:
+    * Within an [Azure Cloud Shell](https://docs.microsoft.com/en-us/azure/cloud-shell/quickstart) session, make sure you're logged on at the subscription where you want to be associated with the service principal by default: 
 
       ```bash
       az account show
       ```
 
-      If this is not the correct subscription, use
+      If this is not the correct subscription, use: 
 
       ```bash
       az account set -s <subscription name or id>  
       ```
 
-    * Create a service principal using Azure CLI
+    * Create a service principal using Azure CLI: 
 
       ```bash
       az ad sp create-for-rbac --sdk-auth
       ```
 
-      >Note: this command will automatically assign RBAC contributor role to the service principal at subscription level, you can narrow down the scope to the specific resource group where your tests will create the resources.
+      >Note: This command will automatically assign RBAC contributor role to the service principal at subscription level. You can narrow down the scope to the specific resource group where your tests will create the resources.
 
-    * Copy the output content and paste it in a file called azureauth.json and secure it with file system permissions (make sure it is not inside of any repo)
-    * Set an environment variable pointing to the file path you just created, here is an example with Powershell and bash:
+    * Copy the output content, paste it in a file called azureauth.json, and secure it with file system permissions (make sure it is not inside of any repo).
+    * Set an environment variable pointing to the file path you just created. Here is an example with Powershell and bash:
 
       Powershell
 
@@ -72,22 +72,22 @@ If you don't already have a Microsoft Azure subscription, you can get a FREE tri
       export AZURE_AUTH_LOCATION=/sdksamples/azureauth.json
       ```
 
-    >Note: for other Azure Active Directory authentication methods for Go, please refer to [Authentication methods in the Azure SDK for Go](https://docs.microsoft.com/en-us/azure/go/azure-sdk-go-authorization).
+    >Note: For other Azure Active Directory authentication methods for Go, see [Authentication methods in the Azure SDK for Go](https://docs.microsoft.com/en-us/azure/go/azure-sdk-go-authorization).
 
-## What is example.go doing
+## What does example.go do
 
-This sample project is focused on demonstrating how to enable cross-region replication in Azure NetApp Files for an NFSv3 enabled volume (note that this process is the same for NFSv4.1 volumes), similar to other examples, the authentication method is based on a service principal, this project will create two ANF Accounts in different regions with capacity pool. A single volume using Premium service level tier as the Primary ANF, and Standard service level tier in the secondary region with Data Protection object.
+This sample project demonstrates how to enable cross-region replication in Azure NetApp Files for an NFSv3 enabled volume. (Note that this process is the same for NFSv4.1 volumes.) Similar to other examples, the authentication method is based on a service principal. This project will create two NetApp accounts in different regions, each with a capacity pool. A single volume using the Premium service level as the Primary volume, and the Standard service level in the secondary region with Data Protection object.
 
-In summary, the process of enabling Cross-Region replication, we can describe it as creating the primary resources, including primary volume, then we move forward and create the secondary resources but with the difference that in the secondary volume, it needs to contain the Data Replication Object, after this is complete, as a last step, we authorize the replication from the primary volume referencing the resource id of the secondary volume.
+The process of enabling cross-region replication involves creating the primary resources, including primary volume.  Then we continue to create the secondary resources, but the secondary volume needs to contain the Data Replication Object. After this step, we authorize the replication from the primary volume, referencing the resource ID of the secondary volume.
 
-In addition, we use some non-sensitive information from the *file-based authentication* file that in the initial stages we get the subscription ID and this is used for the test we perform to check if the subnets provided exists before starting creating any ANF resources, failing execution if they're missing.
+In addition, we use some non-sensitive information from the *file-based authentication* file where we initially get the subscription ID. This information is used for the test to check if the subnets provided exist before creating any Azure NetApp Files resources, failing execution if they're missing.
 
-Authentication is made on each operation where we obtain an authorizer to pass to each client we instantiate (in Azure Go SDK for NetAppFiles each resource has its own client). For more information about the authentication process used, refer to [Use file-based authentication](https://docs.microsoft.com/en-us/azure/go/azure-sdk-go-authorization#use-file-based-authentication) section of [Authentication methods in the Azure SDK for Go](https://docs.microsoft.com/en-us/azure/go/azure-sdk-go-authorization) document.
+Authentication is made on each operation where we obtain an authorizer to pass to each client we instantiate (in Azure Go SDK for NetAppFiles each resource has its own client). For more information about the authentication process used, see the [Use file-based authentication](https://docs.microsoft.com/en-us/azure/go/azure-sdk-go-authorization#use-file-based-authentication) section in [Authentication methods in the Azure SDK for Go](https://docs.microsoft.com/en-us/azure/go/azure-sdk-go-authorization).
 
-Lastly, the clean up process takes place (not enabled by default, please change variable `shouldCleanUp` to `true` at `example.go` file `var()` section if you want clean up), deleting all resources in the reverse order following the hierarchy otherwise we can't remove resources that have nested resources. Related to CRR, before removing the secondary volume, we need to remove data replication object on it before deleting the volume. If there is an error during the application execution, clean up does not take place and you will need to manually perform this task.
-You will notice that the clean up process uses a function called `WaitForNoANFResource` while other parts of the code uses `WaitForANFResource`, at this moment this is required so we can workaround a current ARM behavior of reporting that the object was deleted when in fact its deletion is still in progress, similarly, stating that volume is fully created while this is still finishing up. Also, we will see some functions called `GetAnf<resource type>`, these were created in this sample to be able to get the name of the resource without its hierarchy represented in the `<resource type>.name` property, which cannot be used directly in other methods of Azure NetApp Files client like `get`.
+The last step is the cleanup process (which is not enabled by default; you need to change variable `shouldCleanUp` to `true` at `example.go` file `var()` section to clean up). The process must delete all resources in the reverse order, following the hierarchy; otherwise, we can't remove resources that have nested resources. Before removing the secondary volume, we need to remove the data replication object on it. If there is an error during the application execution, the cleanup process does not take place, and you need to manually perform this task.
+The cleanup process uses a function called `WaitForNoANFResource`, while other parts of the code uses `WaitForANFResource`.  Currently, this behavior is required in order to work around the ARM behavior that reports that the object was deleted when in fact its deletion is still in progress (similarly, stating that volume is fully created while the creation is still completing). Also, we will see functions called `GetAnf<resource type>`; these functions were created in this sample to get the name of the resource without its hierarchy represented in the `<resource type>.name` property, which cannot be used directly in other methods of Azure NetApp Files client like `get`.
 
->Note: Please refer to [Resource limits for Azure NetApp Files](https://docs.microsoft.com/en-us/azure/azure-netapp-files/azure-netapp-files-resource-limits) to understand ANF's most current limits.
+>Note: see [Resource limits for Azure NetApp Files](https://docs.microsoft.com/en-us/azure/azure-netapp-files/azure-netapp-files-resource-limits) to understand Azure NetApp Files limits.
 
 ## Contents
 
@@ -113,7 +113,7 @@ You will notice that the clean up process uses a function called `WaitForNoANFRe
 
 ## How to run
 
-1. Go to your GOPATH folder and create the following path
+1. Go to your GOPATH folder and create the following path: 
     ```powershell
     # PowerShell example
     cd $env:GOPATH/src
@@ -125,18 +125,18 @@ You will notice that the clean up process uses a function called `WaitForNoANFRe
     cd $GOPATH/src
     mkdir -p ./github.com/Azure-Samples
     ```
-2. Clone it locally
+2. Clone the sample locally: 
     ```bash
     cd github.com/Azure-Samples
     git clone https://github.com/Azure-Samples/netappfiles-go-crr-sdk-sample.git
     ```
-3. Change folder to **netappfiles-go-crr-sdk-sample/netappfiles-go-crr-sdk-sample**
+3. Change folder to **netappfiles-go-crr-sdk-sample/netappfiles-go-crr-sdk-sample**: 
     ```bash
     cd netappfiles-go-crr-sdk-sample/netappfiles-go-crr-sdk-sample
     ```
-4. Make sure you have the `azureauth.json` and its environment variable with the path to it defined (as previously described at [prerequisites](#Prerequisites))
+4. Make sure you have the `azureauth.json` and its environment variable with the path to it defined. See [prerequisites](#Prerequisites).
 6. Edit file **example.go** `var()` block and change the variables contents as appropriate (names are self-explanatory).
-7. Run the sample
+7. Run the sample: 
     ```bash
     go run .
     ```
