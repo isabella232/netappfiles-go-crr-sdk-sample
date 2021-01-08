@@ -23,14 +23,14 @@ In this sample application we perform the following operations:
     * Secondary capacity pool
       * Secondary NFS v3 Data Replication volume with reference to the primary volume Resource ID
 * Authorize primary volume with secondary volume Resource ID
-* Clean up created resources (not enabled by default)
+* Clean up created resources (not enabled by default) 
 
 If you don't already have a Microsoft Azure subscription, you can get a FREE trial account [here](http://go.microsoft.com/fwlink/?LinkId=330212).
 
 ## Prerequisites
 
 1. Go installed \(if not installed yet, follow the [official instructions](https://golang.org/dl/)\)
-1. Azure Subscription
+1. Azure Subscription.
 1. Subscription needs to be enabled for Azure NetApp Files. For more information, see [Submit a waitlist request for accessing the service](https://docs.microsoft.com/azure/azure-netapp-files/azure-netapp-files-register#waitlist).
 1. (Valid only until CRR is in preview state) Request preview access for Azure NetApp Files cross-region replication. For more information, see [Create volume replication for Azure NetApp Files](https://docs.microsoft.com/en-us/azure/azure-netapp-files/cross-region-replication-create-peering).
 1. Resource Group(s) created
