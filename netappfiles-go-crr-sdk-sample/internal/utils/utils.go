@@ -16,7 +16,7 @@ import (
 	"syscall"
 
 	"github.com/Azure-Samples/netappfiles-go-crr-sdk-sample/netappfiles-go-crr-sdk-sample/internal/models"
-	"golang.org/x/crypto/ssh/terminal"
+	"golang.org/x/term"
 )
 
 // PrintHeader prints a header message
@@ -54,7 +54,7 @@ func GetTiBInBytes(size uint32) uint64 {
 func ReadAzureBasicInfoJSON(path string) (*models.AzureBasicInfo, error) {
 	infoJSON, err := ioutil.ReadFile(path)
 	if err != nil {
-		fmt.Sprintf("failed to read file: %v", err)
+		fmt.Printf("failed to read file: %v", err)
 		return &models.AzureBasicInfo{}, err
 	}
 	var info models.AzureBasicInfo
@@ -76,7 +76,7 @@ func FindInSlice(slice []string, val string) (int, bool) {
 // GetPassword gets a password
 func GetPassword(prompt string) string {
 	fmt.Print(prompt)
-	bytePassword, _ := terminal.ReadPassword(int(syscall.Stdin))
+	bytePassword, _ := term.ReadPassword(int(syscall.Stdin))
 	fmt.Println()
 	return strings.TrimSpace(string(bytePassword))
 }

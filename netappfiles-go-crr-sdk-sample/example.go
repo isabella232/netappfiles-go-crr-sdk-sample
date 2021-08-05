@@ -44,7 +44,7 @@ type (
 		ServiceLevel          string // Valid service levels are Standard, Premium and Ultra
 		VolumeID              string // This will be populated after resource is created
 		CapacityPoolID        string // This will be populated after resource is created
-		AcccountID            string // This will be populated after resource is created
+		AccountID             string // This will be populated after resource is created
 	}
 )
 
@@ -63,7 +63,7 @@ var (
 
 	// ANF Resource Properties
 	anfResources = map[string]*Properties{
-		"Primary": &Properties{
+		"Primary": {
 			Location:              "westus",
 			ResourceGroupName:     "anf-primary-rg",
 			VnetResourceGroupName: "anf-primary-rg",
@@ -74,7 +74,7 @@ var (
 			ServiceLevel:          "Premium",
 			VolumeName:            "PrimaryVolume",
 		},
-		"Secondary": &Properties{
+		"Secondary": {
 			Location:              "eastus",
 			ResourceGroupName:     "anf-secondary-rg",
 			VnetResourceGroupName: "anf-secondary-rg",
@@ -146,8 +146,8 @@ func main() {
 			shouldCleanUp = false
 			return
 		}
-		anfResources[side].AcccountID = *account.ID
-		utils.ConsoleOutput(fmt.Sprintf("Account successfully created, resource id: %v", anfResources[side].AcccountID))
+		anfResources[side].AccountID = *account.ID
+		utils.ConsoleOutput(fmt.Sprintf("Account successfully created, resource id: %v", anfResources[side].AccountID))
 
 		// Capacity pool creation
 		utils.ConsoleOutput(fmt.Sprintf("Creating %v Capacity Pool...", side))
@@ -270,26 +270,49 @@ func exit(cntx context.Context) {
 			poolName := anfResources[side].CapacityPoolName
 			volumeName := anfResources[side].VolumeName
 
-			// Delete replication
-			utils.ConsoleOutput(fmt.Sprintf("\tRemoving data protection object from %v volume...", anfResources[side].VolumeName))
-			err := sdkutils.DeleteAnfVolumeReplication(
-				cntx,
-				resourceGroupName,
-				accountName,
-				poolName,
-				volumeName,
-			)
-			if err != nil && !strings.Contains(err.Error(), "VolumeReplicationMissing") {
-				utils.ConsoleOutput(fmt.Sprintf("an error ocurred while deleting data replication: %v", err))
-				exitCode = 1
-				return
+			// Break and delete replication only on secondary volume
+			if side == "Secondary" {
+
+				// Break replication
+				utils.ConsoleOutput(fmt.Sprintf("\tWaiting for Mirrored state from %v volume...", anfResources[side].VolumeName))
+				sdkutils.WaitForMirrorState(cntx, anfResources[side].VolumeID, netapp.MirrorStateMirrored, 60, 50)
+				utils.ConsoleOutput(fmt.Sprintf("\tBreaking volume replication on %v volume...", anfResources[side].VolumeName))
+				err := sdkutils.BreakAnfVolumeReplication(
+					cntx,
+					resourceGroupName,
+					accountName,
+					poolName,
+					volumeName,
+				)
+				if err != nil {
+					utils.ConsoleOutput(fmt.Sprintf("an error ocurred while breaking replication volume: %v", err))
+					exitCode = 1
+					return
+				}
+
+				// Delete replication
+				utils.ConsoleOutput(fmt.Sprintf("\tWaiting for Broken state from %v volume...", anfResources[side].VolumeName))
+				sdkutils.WaitForMirrorState(cntx, anfResources[side].VolumeID, netapp.MirrorStateBroken, 60, 50)
+				utils.ConsoleOutput(fmt.Sprintf("\tRemoving data protection object from %v volume...", anfResources[side].VolumeName))
+				err = sdkutils.DeleteAnfVolumeReplication(
+					cntx,
+					resourceGroupName,
+					accountName,
+					poolName,
+					volumeName,
+				)
+				if err != nil && !strings.Contains(err.Error(), "VolumeReplicationMissing") {
+					utils.ConsoleOutput(fmt.Sprintf("an error ocurred while deleting data replication: %v", err))
+					exitCode = 1
+					return
+				}
+				sdkutils.WaitForNoANFResource(cntx, anfResources[side].VolumeID, 60, 50, true)
+				utils.ConsoleOutput("\tData replication successfully deleted")
 			}
-			sdkutils.WaitForNoANFResource(cntx, anfResources[side].VolumeID, 60, 50, true)
-			utils.ConsoleOutput("\tData replication successfully deleted")
 
 			// Volume deletion
 			utils.ConsoleOutput(fmt.Sprintf("\tRemoving %v volume...", anfResources[side].VolumeID))
-			err = sdkutils.DeleteAnfVolume(
+			err := sdkutils.DeleteAnfVolume(
 				cntx,
 				resourceGroupName,
 				accountName,
@@ -321,7 +344,7 @@ func exit(cntx context.Context) {
 			utils.ConsoleOutput("\tCapacity pool successfully deleted")
 
 			// Account Cleanup
-			utils.ConsoleOutput(fmt.Sprintf("\tCleaning up account %v...", anfResources[side].AcccountID))
+			utils.ConsoleOutput(fmt.Sprintf("\tCleaning up account %v...", anfResources[side].AccountID))
 			err = sdkutils.DeleteAnfAccount(
 				cntx,
 				resourceGroupName,
