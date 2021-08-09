@@ -19,8 +19,8 @@ import (
 	"github.com/Azure-Samples/netappfiles-go-crr-sdk-sample/netappfiles-go-crr-sdk-sample/internal/uri"
 	"github.com/Azure-Samples/netappfiles-go-crr-sdk-sample/netappfiles-go-crr-sdk-sample/internal/utils"
 
-	"github.com/Azure/azure-sdk-for-go/services/netapp/mgmt/2020-06-01/netapp"
-	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-10-01/resources"
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/resources/mgmt/resources"
+	"github.com/Azure/azure-sdk-for-go/services/netapp/mgmt/2021-04-01/netapp"
 	"github.com/Azure/go-autorest/autorest/to"
 )
 
@@ -41,11 +41,11 @@ func validateAnfServiceLevel(serviceLevel string) (validatedServiceLevel netapp.
 
 	switch strings.ToLower(serviceLevel) {
 	case "ultra":
-		svcLevel = netapp.Ultra
+		svcLevel = netapp.ServiceLevelUltra
 	case "premium":
-		svcLevel = netapp.Premium
+		svcLevel = netapp.ServiceLevelPremium
 	case "standard":
-		svcLevel = netapp.Standard
+		svcLevel = netapp.ServiceLevelStandard
 	default:
 		return "", fmt.Errorf("invalid service level, supported service levels are: %v", netapp.PossibleServiceLevelValues())
 	}
@@ -268,6 +268,12 @@ func CreateAnfVolume(ctx context.Context, location, resourceGroupName, accountNa
 		}
 	}
 
+	var volumeType string
+	emptyDataProtection := netapp.VolumePropertiesDataProtection{}
+	if dataProtectionObject != emptyDataProtection {
+		volumeType = "DataProtection"
+	}
+
 	volumeProperties := netapp.VolumeProperties{
 		SnapshotID:     map[bool]*string{true: to.StringPtr(snapshotID), false: nil}[snapshotID != ""],
 		ExportPolicy:   map[bool]*netapp.VolumePropertiesExportPolicy{true: &exportPolicy, false: nil}[protocolTypes[0] != cifs],
@@ -277,6 +283,7 @@ func CreateAnfVolume(ctx context.Context, location, resourceGroupName, accountNa
 		UsageThreshold: to.Int64Ptr(volumeUsageQuota),
 		CreationToken:  to.StringPtr(volumeName),
 		DataProtection: &dataProtectionObject,
+		VolumeType:     &volumeType,
 	}
 
 	future, err := volumeClient.CreateOrUpdate(
@@ -358,6 +365,35 @@ func AuthorizeReplication(ctx context.Context, resourceGroupName, accountName, p
 	err = future.WaitForCompletionRef(ctx, volumeClient.Client)
 	if err != nil {
 		return fmt.Errorf("cannot get authorize volume replication future response: %v", err)
+	}
+
+	return nil
+}
+
+// BreakAnfVolumeReplication - breaks volume replication
+func BreakAnfVolumeReplication(ctx context.Context, resourceGroupName, accountName, poolName, volumeName string) error {
+
+	volumeClient, err := getVolumesClient()
+	if err != nil {
+		return err
+	}
+
+	future, err := volumeClient.BreakReplication(
+		ctx,
+		resourceGroupName,
+		accountName,
+		poolName,
+		volumeName,
+		&netapp.BreakReplicationRequest{},
+	)
+
+	if err != nil {
+		return fmt.Errorf("cannot break volume replication: %v", err)
+	}
+
+	err = future.WaitForCompletionRef(ctx, volumeClient.Client)
+	if err != nil {
+		return fmt.Errorf("cannot get break volume replication future response: %v", err)
 	}
 
 	return nil
@@ -554,7 +590,7 @@ func WaitForNoANFResource(ctx context.Context, resourceID string, intervalInSec 
 			)
 		} else if uri.IsAnfVolume(resourceID) {
 			client, _ := getVolumesClient()
-			if checkForReplication == false {
+			if !checkForReplication {
 				_, err = client.Get(
 					ctx,
 					uri.GetResourceGroup(resourceID),
@@ -616,7 +652,7 @@ func WaitForANFResource(ctx context.Context, resourceID string, intervalInSec in
 			)
 		} else if uri.IsAnfVolume(resourceID) {
 			client, _ := getVolumesClient()
-			if checkForReplication == false {
+			if !checkForReplication {
 				_, err = client.Get(
 					ctx,
 					uri.GetResourceGroup(resourceID),
@@ -657,4 +693,31 @@ func WaitForANFResource(ctx context.Context, resourceID string, intervalInSec in
 	}
 
 	return fmt.Errorf("resource still not found after number of retries: %v, error: %v", retries, err)
+}
+
+// WaitForMirrorState waits for a volume to have a particular mirror state
+func WaitForMirrorState(ctx context.Context, volumeID string, anticipatedMirrorState netapp.MirrorState, intervalInSec int, retries int) error {
+
+	var err error
+	var currentReplicationStatus netapp.ReplicationStatus
+
+	client, _ := getVolumesClient()
+
+	for i := 0; i < retries; i++ {
+		time.Sleep(time.Duration(intervalInSec) * time.Second)
+
+		currentReplicationStatus, err = client.ReplicationStatusMethod(
+			ctx,
+			uri.GetResourceGroup(volumeID),
+			uri.GetAnfAccount(volumeID),
+			uri.GetAnfCapacityPool(volumeID),
+			uri.GetAnfVolume(volumeID),
+		)
+		if currentReplicationStatus.MirrorState == anticipatedMirrorState {
+			break
+		}
+	}
+
+	return fmt.Errorf("volume still not at %v state after number of retries: %v, error: %v", anticipatedMirrorState, retries, err)
+
 }
