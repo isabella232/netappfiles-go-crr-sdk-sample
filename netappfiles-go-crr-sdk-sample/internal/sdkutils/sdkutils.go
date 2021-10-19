@@ -19,8 +19,8 @@ import (
 	"github.com/Azure-Samples/netappfiles-go-crr-sdk-sample/netappfiles-go-crr-sdk-sample/internal/uri"
 	"github.com/Azure-Samples/netappfiles-go-crr-sdk-sample/netappfiles-go-crr-sdk-sample/internal/utils"
 
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/netapp/mgmt/netapp"
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/resources/mgmt/resources"
-	"github.com/Azure/azure-sdk-for-go/services/netapp/mgmt/2021-04-01/netapp"
 	"github.com/Azure/go-autorest/autorest/to"
 )
 

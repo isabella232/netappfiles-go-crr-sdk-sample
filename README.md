@@ -31,12 +31,11 @@ If you don't already have a Microsoft Azure subscription, you can get a FREE tri
 
 1. Go installed \(if not installed yet, follow the [official instructions](https://golang.org/dl/)\)
 2. Azure Subscription.
-3. Subscription needs to be enabled for Azure NetApp Files. For more information, see [Submit a waitlist request for accessing the service](https://docs.microsoft.com/azure/azure-netapp-files/azure-netapp-files-register#waitlist).
-4. (Valid only until CRR is in preview state) Request preview access for Azure NetApp Files cross-region replication. For more information, see [Create volume replication for Azure NetApp Files](https://docs.microsoft.com/en-us/azure/azure-netapp-files/cross-region-replication-create-peering).
-5. Resource Group(s) created
-6. Virtual Networks (both for primary and secondary volumes) with a delegated subnet to Microsoft.Netapp/volumes resource. For more information, see [Guidelines for Azure NetApp Files network planning](https://docs.microsoft.com/en-us/azure/azure-netapp-files/azure-netapp-files-network-topologies).
-7. Adjust variable contents within `var()` block at `example.go` file to match your environment
-8. For this sample Go console application to work, authentication is needed. The chosen method for this sample is using service principals:
+3. Subscription needs to have Azure NetApp Files resource provider registered. For more information, see [Register for NetApp Resource Provider](https://docs.microsoft.com/en-us/azure/azure-netapp-files/azure-netapp-files-register).
+4. Resource Group(s) created
+5. Virtual Networks (both for primary and secondary volumes) with a delegated subnet to Microsoft.Netapp/volumes resource. For more information, see [Guidelines for Azure NetApp Files network planning](https://docs.microsoft.com/en-us/azure/azure-netapp-files/azure-netapp-files-network-topologies).
+6. Adjust variable contents within `var()` block at `example.go` file to match your environment
+7. For this sample Go console application to work, authentication is needed. The chosen method for this sample is using service principals:
     * Within an [Azure Cloud Shell](https://docs.microsoft.com/en-us/azure/cloud-shell/quickstart) session, make sure you're logged on at the subscription where you want to be associated with the service principal by default: 
 
       ```bash
